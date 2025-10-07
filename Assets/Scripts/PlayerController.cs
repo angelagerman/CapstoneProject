@@ -10,25 +10,34 @@ using UnityEngine.SceneManagement;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f; // How fast the player moves
+    public float sprintSpeed = 10f;
     public float jumpForce = 5f; // How high the player jumps
     public float gravityScale = 2f; // Controls how strong gravity is on the player
 
     private Rigidbody rb;
     private bool isGrounded;
+    private bool isSprinting;
+    private bool isAutoRunEnabled = false;
     
     private Vector3 moveDirection;
     private Vector3 currentMoveDirection;
     public Transform cameraRig;
 
     private Animator animator;
+    
+    //overworld enemy conditionals
+    public int DangerZone;
+    public bool isInZone = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        rb.constraints = RigidbodyConstraints.FreezeRotation;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         
         animator = GetComponentInChildren<Animator>();
+        
+        DangerZone = 0;
     }
 
     void Update()
@@ -66,8 +75,13 @@ public class PlayerController : MonoBehaviour
             {
                 Jump();
             }
+            
+            if (Input.GetKeyDown(KeyCode.R))
+                isAutoRunEnabled = !isAutoRunEnabled;
+            
+            isSprinting = isAutoRunEnabled || Input.GetKey(KeyCode.LeftShift);
         }
-        float currentSpeed = moveDirection.magnitude;
+        float currentSpeed = (isSprinting ? 1f : 0.5f) * moveDirection.magnitude;
         animator.SetFloat("Speed", currentSpeed);
     }
     
@@ -77,7 +91,8 @@ public class PlayerController : MonoBehaviour
         if (currentMoveDirection.magnitude >= 0.1f)
         {
             //actual moving
-            Vector3 move = currentMoveDirection * moveSpeed * Time.fixedDeltaTime;
+            float speed = isSprinting ? sprintSpeed : moveSpeed;
+            Vector3 move = currentMoveDirection * speed * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + move);
             
             //spinnnnn

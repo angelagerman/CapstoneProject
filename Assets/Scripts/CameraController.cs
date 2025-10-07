@@ -14,6 +14,7 @@ public class CameraController : MonoBehaviour
     public float maxZoom = 10f;
     public float zoomSpeed = 2f;
 
+    public LayerMask collisionLayer;
 
     private float yaw;  // Horizontal rotation (left/right)
     private float pitch; // Vertical rotation (up/down)
@@ -50,7 +51,21 @@ public class CameraController : MonoBehaviour
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
 
         // Position the camera relative to the target
-        cameraTransform.position = transform.position + transform.rotation * offset;
+        Vector3 desiredCameraPos = transform.position + transform.rotation * offset;
+        
+        Vector3 origin = transform.position + Vector3.up * 1.5f; // Start casting from head height
+        Vector3 direction = desiredCameraPos - origin;
+        float distance = direction.magnitude;
+        
+        RaycastHit hit;
+        if (Physics.SphereCast(origin, 0.3f, direction.normalized, out hit, distance, collisionLayer))
+        {
+            cameraTransform.position = origin + direction.normalized * (hit.distance - 0.05f); // Offset to avoid clipping
+        }
+        else
+        {
+            cameraTransform.position = desiredCameraPos;
+        }
         cameraTransform.LookAt(transform.position + Vector3.up * 1.5f); // Optional look-at target offset
     }
     
