@@ -53,26 +53,33 @@ public class Enemy : MonoBehaviour
         }
         else if (!player.isInZone || player.DangerZone != dangerZoneNumber)
         {
-            if (!isWandering)
+            float distanceToSpawn = Vector3.Distance(transform.position, spawnPosition);
+
+            // Check if horse wandered too far I dont want him to get lost :(
+            if (distanceToSpawn > wanderRadius + 0.5f)
             {
-                float distanceToSpawn = Vector3.Distance(transform.position, spawnPosition);
+                // Start returning to spawn
+                isReturningToSpawn = true;
+                isWandering = false; // cancel wandering if returning
+            }
+            
+            //send him home
+            if (isReturningToSpawn)
+            {
+                Vector3 direction = (spawnPosition - transform.position).normalized;
+                transform.position += direction * speed * Time.deltaTime;
+                RotateTowards(direction);
 
-                if (distanceToSpawn > wanderRadius + 0.5f)
+                if (distanceToSpawn < 0.1f)
                 {
-                    // Go back to spawn if too far from home I don't want him to get lost
-                    isReturningToSpawn = true;
-                    Vector3 direction = (spawnPosition - transform.position).normalized;
-                    transform.position += direction * speed * Time.deltaTime;
-                    RotateTowards(direction);
-
-                    if (distanceToSpawn < 0.1f)
-                    {
-                        isReturningToSpawn = false;
-                        StartCoroutine(WanderRoutine());
-                    }
+                    transform.position = spawnPosition;
+                    isReturningToSpawn = false;
+                    StartCoroutine(WanderRoutine());
+                    print("the horse is home :) yay :)");
                 }
             }
 
+            //chill time
             if (isWandering)
             {
                 Vector3 direction = (wanderTarget - transform.position).normalized;
@@ -86,6 +93,7 @@ public class Enemy : MonoBehaviour
                 }
             }
         }
+
         
         float movementSpeed = (transform.position - lastPosition).magnitude / Time.deltaTime;
         lastPosition = transform.position;

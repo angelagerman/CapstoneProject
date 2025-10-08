@@ -33,7 +33,7 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!target) return;
+        if (GameManager.isPaused || !target) return;
 
         // Get mouse input
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
