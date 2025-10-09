@@ -10,6 +10,7 @@ public class Enemy : MonoBehaviour
     public int dangerZoneNumber;
 
     public PlayerController player;
+    public BattleController battleController;
     
     //bro is vibing. in his lane. unbothered king. go off evil and intimidating horse.
     private Vector3 spawnPosition;
@@ -113,6 +114,7 @@ public class Enemy : MonoBehaviour
             if (targetRigidbody != null)
             {
                 print("ow");
+                battleController.StartBattle();
             }
         }
     }
