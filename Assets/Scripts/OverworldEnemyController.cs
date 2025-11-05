@@ -120,6 +120,7 @@ public class OverworldEnemy : MonoBehaviour
             
             if (targetRigidbody != null)
             {
+                player.isInCombat = true;
                 int enemyCount = 1;
                 print("ow");
                 if (enemyGroupManager != null)

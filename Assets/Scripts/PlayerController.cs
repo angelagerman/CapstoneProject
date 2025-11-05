@@ -29,6 +29,8 @@ public class PlayerController : MonoBehaviour
     public int DangerZone;
     public bool isInZone = false;
 
+    public bool isInCombat = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -88,7 +90,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         
-        if (currentMoveDirection.magnitude >= 0.1f)
+        if (currentMoveDirection.magnitude >= 0.1f && !isInCombat)
         {
             //actual moving
             float speed = isSprinting ? sprintSpeed : moveSpeed;
@@ -130,6 +132,4 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = false;
     }
-    
-    
 }

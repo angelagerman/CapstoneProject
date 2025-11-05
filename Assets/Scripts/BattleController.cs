@@ -21,6 +21,8 @@ public class BattleController : MonoBehaviour
 
     private int currentZone;
     private int currentEnemyCount;
+
+    public PlayerController PlayerController;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -51,6 +53,7 @@ public class BattleController : MonoBehaviour
     
     void EndBattle()
     {
+        PlayerController.isInCombat = false;
         CameraSwitch.SwapActiveCamera(battleCamera, overworldCamera);
         
         foreach (Transform child in battleSpawnArea)
