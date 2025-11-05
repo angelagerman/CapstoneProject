@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class OverworldEnemy : MonoBehaviour
 {
     public Transform target;
     public float speed;
@@ -11,6 +11,7 @@ public class Enemy : MonoBehaviour
 
     public PlayerController player;
     public BattleController battleController;
+    public EnemyGroupManager enemyGroupManager;
     
     //bro is vibing. in his lane. unbothered king. go off evil and intimidating horse.
     private Vector3 spawnPosition;
@@ -32,6 +33,11 @@ public class Enemy : MonoBehaviour
         
         animator = GetComponentInChildren<Animator>();
         lastPosition = transform.position;
+
+        if (enemyGroupManager != null)
+        {
+            enemyGroupManager.RegisterEnemyToZone(this);
+        }
     }
 
     // Update is called once per frame
@@ -111,10 +117,18 @@ public class Enemy : MonoBehaviour
         if (collision.transform == target)
         {
             Rigidbody targetRigidbody = collision.gameObject.GetComponent<Rigidbody>();
+            
             if (targetRigidbody != null)
             {
+                int enemyCount = 1;
                 print("ow");
-                battleController.StartBattle();
+                if (enemyGroupManager != null)
+                {
+                    enemyCount = enemyGroupManager.GetEnemyCountInZone(dangerZoneNumber);
+                    enemyGroupManager.DeactivateEnemiesInZone(dangerZoneNumber);
+                }
+                
+                battleController.StartBattle(dangerZoneNumber,enemyCount);
             }
         }
     }
