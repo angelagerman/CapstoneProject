@@ -12,6 +12,7 @@ public class CharacterStats : ScriptableObject
     public int level;
     public int maxHealth;
     public int currentHealth;
+    public int currentMagic;
     public int strength;
     public int magic;
     public int defense;

@@ -36,4 +36,13 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
             stats.isAlive = true;
         }
     }
+    
+    public void TakeDamage(int amount)
+    {
+        stats.currentHealth -= amount;
+        if (stats.currentHealth < 0)
+        {
+            stats.currentHealth = 0;
+        }
+    }
 }

@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class BattleController : MonoBehaviour
 {
@@ -27,6 +29,12 @@ public class BattleController : MonoBehaviour
     private bool battleActive = false;
 
     public PlayerController PlayerController;
+    
+    public GameObject allyActionMenu;
+    public TurnOrderUI turnOrderUI;
+    public AllyStatusUI allyStatusUI;
+    private List<GameObject> spawnedAllies = new();
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -53,11 +61,13 @@ public class BattleController : MonoBehaviour
         
         SpawnBattleEnemies(enemyCount);
         SpawnAllies();
+        battleActive = true;
         StartRound();
     }
     
     void EndBattle()
     {
+        battleActive = false;
         PlayerController.isInCombat = false;
         CameraSwitch.SwapActiveCamera(battleCamera, overworldCamera);
         
@@ -65,6 +75,13 @@ public class BattleController : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        
+        foreach (Transform child in allySpawnArea)
+        {
+            Destroy(child.gameObject);
+        }
+
+        spawnedAllies.Clear();
     }
     
     void StartRound()
@@ -73,7 +90,6 @@ public class BattleController : MonoBehaviour
 
         turnOrder.Clear();
 
-        // Collect all combatants in the battle
         var allCombatants = new List<ICombatant>();
         allCombatants.AddRange(battleSpawnArea.GetComponentsInChildren<ICombatant>());
         allCombatants.AddRange(allySpawnArea.GetComponentsInChildren<ICombatant>());
@@ -84,19 +100,112 @@ public class BattleController : MonoBehaviour
                 turnOrder.Add(c);
         }
 
+        // Shuffle first to randomize tie-breaking
+        for (int i = turnOrder.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (turnOrder[i], turnOrder[j]) = (turnOrder[j], turnOrder[i]);
+        }
+
         // Sort by attack speed descending
         turnOrder.Sort((a, b) => b.CalculateAttackSpeed().CompareTo(a.CalculateAttackSpeed()));
 
         Debug.Log("Turn order for this round:");
         foreach (var c in turnOrder)
-            Debug.Log($"{c.DisplayName} (Speed: {c.CalculateAttackSpeed()})");
+            Debug.Log($"{c.DisplayName} (Attack Speed: {c.CalculateAttackSpeed()})");
+        
+        if (turnOrderUI != null)
+            turnOrderUI.UpdateTurnOrderDisplay(turnOrder);
 
         currentTurnIndex = 0;
 
-        //if (turnOrder.Count > 0)
-            //StartCoroutine(RunTurnOrder());
+        if (turnOrder.Count > 0)
+            StartCoroutine(RunTurnOrder());
     }
+    
+    IEnumerator RunTurnOrder()
+    {
+        Debug.Log("=== Running Turns ===");
 
+        while (battleActive)
+        {
+            if (currentTurnIndex >= turnOrder.Count)
+            {
+                Debug.Log("Round complete. Starting next round...");
+                StartRound();
+                yield break;
+            }
+
+            ICombatant current = turnOrder[currentTurnIndex];
+            if (current == null || !current.IsAlive)
+            {
+                currentTurnIndex++;
+                continue;
+            }
+
+            Debug.Log($"It's {current.DisplayName}'s turn!");
+
+            // Ally turn
+            if (current is AllyBattleActions ally)
+            {
+                allyStatusUI?.HighlightAlly(ally); // enlarge the active ally’s bar
+                allyActionMenu?.SetActive(true);
+
+                // Wait for player to confirm or simulate delay for now
+                yield return StartCoroutine(WaitForPlayerInput());
+
+                allyActionMenu?.SetActive(false);
+            }
+            // Enemy turn
+            else if (current is EnemyBattleActions enemy)
+            {
+                yield return StartCoroutine(EnemyTakeTurn(enemy));
+            }
+
+            turnOrderUI?.RemoveCombatantFromOrder(current);
+            allyStatusUI?.UpdateStatusBars();
+
+            currentTurnIndex++;
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+    
+    IEnumerator WaitForPlayerInput()
+    {
+        // hook up buttons later
+        // For now, simulate a short wait so it doesn’t freeze
+        yield return new WaitForSeconds(1f);
+    }
+    
+    IEnumerator EnemyTakeTurn(EnemyBattleActions enemy)
+    {
+        Debug.Log($"{enemy.DisplayName} is attacking!");
+
+        // Collect all living allies
+        List<AllyBattleActions> livingAllies = new();
+        foreach (var a in allySpawnArea.GetComponentsInChildren<AllyBattleActions>())
+        {
+            if (a.IsAlive)
+                livingAllies.Add(a);
+        }
+
+        if (livingAllies.Count == 0)
+        {
+            Debug.Log("All allies are defeated!");
+            EndBattle();
+            yield break;
+        }
+
+        // Pick a random target
+        var target = livingAllies[Random.Range(0, livingAllies.Count)];
+
+        int damage = Mathf.Max(1, enemy.stats.strength - target.stats.defense);
+        Debug.Log($"{enemy.DisplayName} attacks {target.DisplayName} for {damage} damage!");
+
+        target.TakeDamage(damage);
+
+        yield return new WaitForSeconds(1f);
+    }
     
     void SpawnBattleEnemies(int count)
     {
@@ -147,6 +256,7 @@ public class BattleController : MonoBehaviour
     {
         foreach (Transform child in allySpawnArea)
             Destroy(child.gameObject);
+        spawnedAllies.Clear();
 
         int count = Mathf.Min(partyMembers.Count, 4);
         if (count == 0)
@@ -179,6 +289,8 @@ public class BattleController : MonoBehaviour
             Vector3 spawnPos = allySpawnArea.position + playerBattleTransform.TransformDirection(localOffset);
 
             GameObject ally = Instantiate(member.allyPrefab, spawnPos, Quaternion.identity, allySpawnArea);
+            
+            spawnedAllies.Add(ally);
 
             // Make them look toward the enemy / battle center
             if (playerBattleTransform != null)
@@ -187,6 +299,8 @@ public class BattleController : MonoBehaviour
                 ally.transform.LookAt(new Vector3(focusPoint.x, ally.transform.position.y, focusPoint.z));
             }
         }
+        if (allyStatusUI != null)
+            allyStatusUI.BuildStatusPanel(spawnedAllies);
     }
 
 

@@ -17,6 +17,7 @@ MonoBehaviour:
   level: 1
   maxHealth: 27
   currentHealth: 27
+  currentMagic: 27
   strength: 13
   magic: 6
   defense: 6

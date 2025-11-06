@@ -20,4 +20,13 @@ public class EnemyBattleActions : MonoBehaviour, ICombatant
     {
         return stats.speed - (stats.weight - (stats.strength / 5));
     }
+    
+    public void TakeDamage(int amount)
+    {
+        currentHealth -= amount;
+        if (currentHealth < 0)
+        {
+            currentHealth = 0;
+        }
+    }
 }
