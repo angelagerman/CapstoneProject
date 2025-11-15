@@ -24,9 +24,12 @@ public class EnemyBattleActions : MonoBehaviour, ICombatant
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
-        if (currentHealth < 0)
+        if (currentHealth <= 0)
         {
             currentHealth = 0;
+            isAlive = false;
         }
     }
+    
+    
 }

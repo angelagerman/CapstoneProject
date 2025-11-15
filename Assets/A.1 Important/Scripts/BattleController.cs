@@ -29,11 +29,16 @@ public class BattleController : MonoBehaviour
     private bool battleActive = false;
 
     public PlayerController PlayerController;
+    public EnemyTargetSelector enemySelector;
     
     public GameObject allyActionMenu;
     public TurnOrderUI turnOrderUI;
     public AllyStatusUI allyStatusUI;
     private List<GameObject> spawnedAllies = new();
+
+    private bool playerHasFinishedInput = false;
+    private AllyBattleActions currentActingAlly;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -54,6 +59,8 @@ public class BattleController : MonoBehaviour
     {
         currentZone = zoneNumber;
         currentEnemyCount = enemyCount;
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.visible = true;
         
         Debug.Log($"Starting battle for zone {zoneNumber} with {enemyCount} enemies");
         
@@ -70,6 +77,8 @@ public class BattleController : MonoBehaviour
         battleActive = false;
         PlayerController.isInCombat = false;
         CameraSwitch.SwapActiveCamera(battleCamera, overworldCamera);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
         
         foreach (Transform child in battleSpawnArea)
         {
@@ -148,6 +157,7 @@ public class BattleController : MonoBehaviour
             // Ally turn
             if (current is AllyBattleActions ally)
             {
+                currentActingAlly = ally;
                 allyStatusUI?.HighlightAlly(ally); // enlarge the active ally’s bar
                 allyActionMenu?.SetActive(true);
 
@@ -172,9 +182,8 @@ public class BattleController : MonoBehaviour
     
     IEnumerator WaitForPlayerInput()
     {
-        // hook up buttons later
-        // For now, simulate a short wait so it doesn’t freeze
-        yield return new WaitForSeconds(1f);
+        playerHasFinishedInput = false;
+        yield return new WaitUntil(() => playerHasFinishedInput);
     }
     
     IEnumerator EnemyTakeTurn(EnemyBattleActions enemy)
@@ -206,6 +215,22 @@ public class BattleController : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
     }
+    
+    public void OnAttackPressed()
+    {
+        var enemies = battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>();
+        allyActionMenu?.SetActive(false);
+
+        enemySelector.OpenSelector(enemies, enemy =>
+        {
+            Debug.Log("Player selected: " + enemy.DisplayName);
+
+            currentActingAlly.MeleeAttack(enemy);
+
+            playerHasFinishedInput = true;
+        });
+    }
+
     
     void SpawnBattleEnemies(int count)
     {
@@ -302,8 +327,4 @@ public class BattleController : MonoBehaviour
         if (allyStatusUI != null)
             allyStatusUI.BuildStatusPanel(spawnedAllies);
     }
-
-
-
-
 }
