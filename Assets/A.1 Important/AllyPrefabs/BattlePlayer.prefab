@@ -2941,7 +2941,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AllyBattleActions
   stats: {fileID: 11400000, guid: 6a897929ab8103542bfddc96bdb94997, type: 2}
-  weapon: {fileID: 0}
+  weapon: {fileID: 11400000, guid: f5d3fdccbd3cde441a81a878737299e4, type: 2}
   equipment: {fileID: 0}
 --- !u!1 &3328012999511134204
 GameObject:

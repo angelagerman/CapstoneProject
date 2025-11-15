@@ -208,11 +208,27 @@ public class BattleController : MonoBehaviour
         // Pick a random target
         var target = livingAllies[Random.Range(0, livingAllies.Count)];
 
-        int damage = Mathf.Max(1, enemy.stats.strength - target.stats.defense);
+        int damage;
+        if (enemy.IsAHit(target))
+        {
+            if (enemy.CheckForCrit())
+            {
+                damage = enemy.CalculateAttackDamage(target) * 2;
+            }
+            else
+            {
+                damage = enemy.CalculateAttackDamage(target);
+            }
+        }
+        else
+        {
+            damage = 0;
+            print("miss!");
+        }
         Debug.Log($"{enemy.DisplayName} attacks {target.DisplayName} for {damage} damage!");
 
         target.TakeDamage(damage);
-
+        CheckBattleEnd();
         yield return new WaitForSeconds(1f);
     }
     
@@ -226,11 +242,47 @@ public class BattleController : MonoBehaviour
             Debug.Log("Player selected: " + enemy.DisplayName);
 
             currentActingAlly.MeleeAttack(enemy);
-
+            
+            CheckBattleEnd();
             playerHasFinishedInput = true;
         });
     }
+    
+    private void CheckBattleEnd()
+    {
+        // Check if any living allies
+        bool anyAlliesAlive = false;
+        foreach (var ally in allySpawnArea.GetComponentsInChildren<AllyBattleActions>())
+        {
+            if (ally.IsAlive)
+            {
+                anyAlliesAlive = true;
+                break;
+            }
+        }
 
+        // Check if any living enemies
+        bool anyEnemiesAlive = false;
+        foreach (var enemy in battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>())
+        {
+            if (enemy.IsAlive)
+            {
+                anyEnemiesAlive = true;
+                break;
+            }
+        }
+
+        if (!anyAlliesAlive)
+        {
+            Debug.Log("All allies are defeated!");
+            EndBattle();
+        }
+        else if (!anyEnemiesAlive)
+        {
+            Debug.Log("All enemies are defeated!");
+            EndBattle();
+        }
+    }
     
     void SpawnBattleEnemies(int count)
     {

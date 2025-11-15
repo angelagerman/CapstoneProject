@@ -14,8 +14,13 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
     {
         int weaponWeight  = weapon?.weight ?? 0;
         int equipWeight   = equipment?.weight ?? 0;
+        int equipSpeedBuff   = equipment?.speedBuff ?? 0;
+        int equipStrengthBuff   = equipment?.strengthBuff ?? 0;
 
-        return stats.speed - (weaponWeight + equipWeight - (stats.strength / 5));
+        int speed = stats.speed + equipSpeedBuff;
+        int strength = stats.strength + equipStrengthBuff;
+
+        return speed - (weaponWeight + equipWeight - (strength / 5));
     }
 
     public void ReviveForBattle()
@@ -49,11 +54,11 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         {
             if (CheckForCrit())
             {
-                damage = CalculateAttack(target, "melee") * 2;
+                damage = CalculateAttackDamage(target, "melee") * 2;
             }
             else
             {
-                damage = CalculateAttack(target, "melee");
+                damage = CalculateAttackDamage(target, "melee");
             }
         }
         else
@@ -94,7 +99,10 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
     }
     public bool CheckForCrit()
     {
-        int critRate = (CalculateAttackSpeed() + stats.luck) / 2;
+        int equipLuckBuff   = equipment?.luckBuff ?? 0;
+        int luck = stats.luck + equipLuckBuff;
+        
+        int critRate = (CalculateAttackSpeed() + luck) / 2;
         
         int rand1 = Random.Range(0, 100);
         int rand2 = Random.Range(0, 100);
@@ -110,18 +118,19 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
             return false;
         }
     }
-    public int CalculateAttack(EnemyBattleActions target, string attackType)
+    public int CalculateAttackDamage(EnemyBattleActions target, string attackType)
     {
         int weaponMight  = weapon?.might ?? 0;
-        int equipbuff   = equipment?.strengthBuff ?? 0;
+        int equipStrengthBuff   = equipment?.strengthBuff ?? 0;
+        int equipMagicBuff   = equipment?.magicBuff ?? 0;
 
         if (attackType == "melee")
         {
-            return weaponMight + equipbuff + stats.strength - target.stats.defense;
+            return weaponMight + equipStrengthBuff + stats.strength - target.stats.defense;
         }
         else if (attackType == "magic")
         {
-            return weaponMight + equipbuff + stats.magic - target.stats.defense;
+            return weaponMight + equipMagicBuff + stats.magic - target.stats.defense;
         }
         else
         {
