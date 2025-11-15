@@ -12,21 +12,10 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
 
     public int CalculateAttackSpeed()
     {
-        if (weapon != null)
-        {
-            if (equipment != null)
-            {
-                return stats.speed - (weapon.weight + equipment.weight - (stats.strength / 5));
-            }
-            else
-            {
-                return stats.speed - (weapon.weight - (stats.strength / 5));
-            }
-        }
-        else
-        {
-            return stats.speed + (stats.strength / 5);
-        }
+        int weaponWeight  = weapon?.weight ?? 0;
+        int equipWeight   = equipment?.weight ?? 0;
+
+        return stats.speed - (weaponWeight + equipWeight - (stats.strength / 5));
     }
 
     public void ReviveForBattle()
