@@ -34,6 +34,7 @@ public class BattleController : MonoBehaviour
     public GameObject allyActionMenu;
     public TurnOrderUI turnOrderUI;
     public AllyStatusUI allyStatusUI;
+    public GameObject BattleUI;
     private List<GameObject> spawnedAllies = new();
 
     private bool playerHasFinishedInput = false;
@@ -61,6 +62,7 @@ public class BattleController : MonoBehaviour
         currentEnemyCount = enemyCount;
         Cursor.lockState = CursorLockMode.Confined;
         Cursor.visible = true;
+        BattleUI.SetActive(true);
         
         Debug.Log($"Starting battle for zone {zoneNumber} with {enemyCount} enemies");
         
@@ -79,6 +81,7 @@ public class BattleController : MonoBehaviour
         CameraSwitch.SwapActiveCamera(battleCamera, overworldCamera);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        BattleUI.SetActive(false);
         
         foreach (Transform child in battleSpawnArea)
         {

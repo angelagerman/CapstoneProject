@@ -62,11 +62,13 @@ public class EnemyBattleActions : MonoBehaviour, ICombatant
         int hit = (stats.speed + stats.luck) / 2;
         int avoid = target.CalculateAttackSpeed();
 
-        int hitRate = hit - avoid;
+        int hitRate = stats.hitRate + hit - avoid;
 
         int rand1 = Random.Range(0, 100);
         int rand2 = Random.Range(0, 100);
         float hitAverage = (rand1 + rand2) / 2f;
+        
+        print("Hit rate: " + hitRate + ", Hit average: " + hitAverage);
 
         if (hitRate > hitAverage)
         {

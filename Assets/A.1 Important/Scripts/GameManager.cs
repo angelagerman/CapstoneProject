@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class GameManager : MonoBehaviour
 {
@@ -36,7 +39,7 @@ public class GameManager : MonoBehaviour
         {
             Time.timeScale = 1f; // Resume normal time
             if (pauseMenuUI) pauseMenuUI.SetActive(false);
-            if (playerController.isInCombat = false)
+            if (playerController.isInCombat == false)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -58,6 +61,10 @@ public class GameManager : MonoBehaviour
 
     public void OnQuitButtonClick()
     {
-        
+        #if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
     }
 }
