@@ -2943,6 +2943,34 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 6a897929ab8103542bfddc96bdb94997, type: 2}
   weapon: {fileID: 11400000, guid: f5d3fdccbd3cde441a81a878737299e4, type: 2}
   equipment: {fileID: 0}
+  magicSpells:
+  - spellName: test spell 2
+    spellElement: fire
+    supportStat: 
+    might: 7
+    hitRate: 80
+    manaCost: 5
+    levelRequirement: 1
+    isAOE: 0
+    isSupport: 0
+  - spellName: test spell 3
+    spellElement: fire
+    supportStat: 
+    might: 9
+    hitRate: 100
+    manaCost: 5
+    levelRequirement: 1
+    isAOE: 0
+    isSupport: 0
+  - spellName: test spell overleveled
+    spellElement: fire
+    supportStat: 
+    might: 9
+    hitRate: 100
+    manaCost: 5
+    levelRequirement: 5
+    isAOE: 0
+    isSupport: 0
 --- !u!1 &3328012999511134204
 GameObject:
   m_ObjectHideFlags: 0

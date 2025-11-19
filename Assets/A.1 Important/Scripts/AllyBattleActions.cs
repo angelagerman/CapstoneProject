@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -6,6 +7,23 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
     public CharacterStats stats;
     public WeaponStats weapon;
     public EquipmentStats equipment;
+    
+    [System.Serializable]
+    public class MagicSpell
+    {
+        public string spellName;
+        public string spellElement;
+        public string supportStat;
+        public int might;
+        public int hitRate;
+        public int manaCost;
+        public int levelRequirement;
+        public bool isAOE;
+        public bool isSupport;
+    }
+    
+    public List<MagicSpell> magicSpells = new List<MagicSpell>();
+
     
     public string DisplayName => stats != null ? stats.characterName : "Unnamed Ally";
     public bool IsAlive => stats != null && stats.isAlive;
@@ -50,15 +68,15 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         }
         
         int damage;
-        if (IsAHit(target))
+        if (MeleeHitCheck(target))
         {
             if (CheckForCrit())
             {
-                damage = CalculateAttackDamage(target, "melee") * 2;
+                damage = CalculateMeleeAttackDamage(target) * 2;
             }
             else
             {
-                damage = CalculateAttackDamage(target, "melee");
+                damage = CalculateMeleeAttackDamage(target);
             }
         }
         else
@@ -72,8 +90,42 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
 
         // add animation triggers here later
     }
+    public void MagicAttack(EnemyBattleActions target, MagicSpell spell)
+    {
+        if (target == null || !target.IsAlive)
+        {
+            Debug.Log($"{DisplayName} tried to attack, but the target is invalid!");
+            return;
+        }
+        
+        stats.currentMagic -= spell.manaCost;
+        
+        int damage;
+        if (MagicHitCheck(target, spell))
+        {
+            if (CheckForCrit())
+            {
+                damage = CalculateMagicAttackDamage(target, spell) * 2;
+            }
+            else
+            {
+                damage = CalculateMagicAttackDamage(target, spell);
+            }
+        }
+        else
+        {
+            damage = 0;
+            print("miss!");
+        }
+        
+        Debug.Log($"{DisplayName} attacks {target.DisplayName} for {damage} damage!");
+        target.TakeDamage(damage);
 
-    public bool IsAHit(EnemyBattleActions target)
+        // add animation triggers here later
+    }
+    
+    
+    public bool MeleeHitCheck(EnemyBattleActions target)
     {
         int weaponHit  = weapon?.hitRate ?? 0;
         int equipHit   = equipment?.hitRateBuff ?? 0;
@@ -84,9 +136,33 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
 
         int hitRate = hit - avoid;
         
-        int rand1 = Random.Range(0, 100);
-        int rand2 = Random.Range(0, 100);
-        float hitAverage = (rand1 + rand2) / 2f;
+        float hitAverage = (Random.Range(0, 100) + Random.Range(0, 100)) * 0.5f;
+        
+        print("Hit rate: " + hitRate + ", Hit average: " + hitAverage);
+
+        if (hitRate > hitAverage)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public bool MagicHitCheck(EnemyBattleActions target, MagicSpell spell)
+    {
+        int spellHit  = spell?.hitRate ?? 0;
+        int equipHit   = equipment?.hitRateBuff ?? 0;
+        int statHit    = (stats.speed + stats.luck) / 2;
+
+        int hit = spellHit + equipHit + statHit;
+        int avoid = target.CalculateAttackSpeed();
+
+        int hitRate = hit - avoid;
+        
+        float hitAverage = (Random.Range(0, 100) + Random.Range(0, 100)) * 0.5f;
+        
+        print("Hit rate: " + hitRate + ", Hit average: " + hitAverage);
 
         if (hitRate > hitAverage)
         {
@@ -118,24 +194,20 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
             return false;
         }
     }
-    public int CalculateAttackDamage(EnemyBattleActions target, string attackType)
+    
+    
+    public int CalculateMeleeAttackDamage(EnemyBattleActions target)
     {
         int weaponMight  = weapon?.might ?? 0;
         int equipStrengthBuff   = equipment?.strengthBuff ?? 0;
+
+        return weaponMight + equipStrengthBuff + stats.strength - target.stats.defense;
+    }
+    public int CalculateMagicAttackDamage(EnemyBattleActions target, MagicSpell spell)
+    {
+        int spellMight  = spell?.might ?? 0;
         int equipMagicBuff   = equipment?.magicBuff ?? 0;
 
-        if (attackType == "melee")
-        {
-            return weaponMight + equipStrengthBuff + stats.strength - target.stats.defense;
-        }
-        else if (attackType == "magic")
-        {
-            return weaponMight + equipMagicBuff + stats.magic - target.stats.defense;
-        }
-        else
-        {
-            print("you're bad at spelling bro");
-            return 0;
-        }
+        return spellMight + equipMagicBuff + stats.magic - target.stats.defense;
     }
 }

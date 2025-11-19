@@ -2038,6 +2038,25 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: 72b77b0658f6b054eb20ae09bd6f7726, type: 2}
   weapon: {fileID: 11400000, guid: f8f11be506d3e9741a315c70f4e33093, type: 2}
   equipment: {fileID: 0}
+  magicSpells:
+  - spellName: test spell 1
+    spellElement: wind
+    supportStat: 
+    might: 5
+    hitRate: 90
+    manaCost: 10
+    levelRequirement: 1
+    isAOE: 0
+    isSupport: 0
+  - spellName: test spell overlevel
+    spellElement: wind
+    supportStat: 
+    might: 5
+    hitRate: 90
+    manaCost: 10
+    levelRequirement: 5
+    isAOE: 0
+    isSupport: 0
 --- !u!1 &4607767168806426843
 GameObject:
   m_ObjectHideFlags: 0

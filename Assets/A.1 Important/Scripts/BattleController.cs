@@ -35,6 +35,7 @@ public class BattleController : MonoBehaviour
     public TurnOrderUI turnOrderUI;
     public AllyStatusUI allyStatusUI;
     public GameObject BattleUI;
+    public MagicMenuUI magicMenu;
     private List<GameObject> spawnedAllies = new();
 
     private bool playerHasFinishedInput = false;
@@ -183,6 +184,19 @@ public class BattleController : MonoBehaviour
         }
     }
     
+    private void RemoveDeadFromTurnOrder()
+    {
+        // Remove all dead combatants from turnOrder
+        turnOrder.RemoveAll(c => c == null || !c.IsAlive);
+
+        // Update turn index if necessary
+        if (currentTurnIndex >= turnOrder.Count)
+            currentTurnIndex = turnOrder.Count - 1;
+
+        // Update the UI
+        turnOrderUI?.UpdateTurnOrderDisplay(turnOrder);
+    }
+    
     IEnumerator WaitForPlayerInput()
     {
         playerHasFinishedInput = false;
@@ -232,6 +246,7 @@ public class BattleController : MonoBehaviour
 
         target.TakeDamage(damage);
         CheckBattleEnd();
+        RemoveDeadFromTurnOrder();
         yield return new WaitForSeconds(1f);
     }
     
@@ -247,9 +262,38 @@ public class BattleController : MonoBehaviour
             currentActingAlly.MeleeAttack(enemy);
             
             CheckBattleEnd();
+            RemoveDeadFromTurnOrder();
             playerHasFinishedInput = true;
         });
     }
+    
+    public void OnSpellsPressed()
+    {
+        if (currentActingAlly == null)
+            return;
+
+        allyActionMenu.SetActive(false);
+
+        magicMenu.Open(currentActingAlly, spell =>
+        {
+            // When the spell is clicked
+
+            // first choose a target
+            var enemies = battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>();
+            magicMenu.Close();
+            enemySelector.OpenSelector(enemies, enemy =>
+            {
+                Debug.Log($"Player selected magic spell: {spell.spellName}");
+
+                currentActingAlly.MagicAttack(enemy, spell);
+                
+                CheckBattleEnd();
+                RemoveDeadFromTurnOrder();
+                playerHasFinishedInput = true;
+            });
+        });
+    }
+
     
     private void CheckBattleEnd()
     {

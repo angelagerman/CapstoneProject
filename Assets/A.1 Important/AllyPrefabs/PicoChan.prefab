@@ -46,8 +46,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AllyBattleActions
   stats: {fileID: 11400000, guid: de3bc7c4b9f6bcf4f9b60b35a0099e33, type: 2}
-  weapon: {fileID: 0}
+  weapon: {fileID: 11400000, guid: a03160262621d934daade3cbd6559038, type: 2}
   equipment: {fileID: 0}
+  magicSpells:
+  - spellName: test spell 7
+    spellElement: 
+    supportStat: 
+    might: 5
+    hitRate: 50
+    manaCost: 5
+    levelRequirement: 1
+    isAOE: 0
+    isSupport: 0
+  - spellName: test spell 8
+    spellElement: 
+    supportStat: 
+    might: 2
+    hitRate: 25
+    manaCost: 5
+    levelRequirement: 1
+    isAOE: 0
+    isSupport: 0
 --- !u!1001 &3398998023765941463
 PrefabInstance:
   m_ObjectHideFlags: 0
