@@ -2940,7 +2940,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ccda67937d93594388769fcd94141a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AllyBattleActions
-  stats: {fileID: 11400000, guid: 6a897929ab8103542bfddc96bdb94997, type: 2}
+  stats: {fileID: 11400000, guid: 6b0b4bc22942f264e82190e96a945c9f, type: 2}
   weapon: {fileID: 11400000, guid: f5d3fdccbd3cde441a81a878737299e4, type: 2}
   equipment: {fileID: 0}
   magicSpells:

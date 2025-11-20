@@ -77,18 +77,22 @@ public class BattleController : MonoBehaviour
     
     void EndBattle()
     {
+        int totalXP = CalculateTotalExperienceReward();
+        AwardExperienceToParty(totalXP);
+        Debug.Log($"Party gained {totalXP} total XP!");
+
         battleActive = false;
         PlayerController.isInCombat = false;
         CameraSwitch.SwapActiveCamera(battleCamera, overworldCamera);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         BattleUI.SetActive(false);
-        
+    
         foreach (Transform child in battleSpawnArea)
         {
             Destroy(child.gameObject);
         }
-        
+    
         foreach (Transform child in allySpawnArea)
         {
             Destroy(child.gameObject);
@@ -96,7 +100,6 @@ public class BattleController : MonoBehaviour
 
         spawnedAllies.Clear();
     }
-    
     void StartRound()
     {
         Debug.Log("=== Starting New Round ===");
@@ -180,10 +183,9 @@ public class BattleController : MonoBehaviour
             allyStatusUI?.UpdateStatusBars();
 
             currentTurnIndex++;
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(2f);
         }
     }
-    
     private void RemoveDeadFromTurnOrder()
     {
         // Remove all dead combatants from turnOrder
@@ -225,12 +227,14 @@ public class BattleController : MonoBehaviour
         // Pick a random target
         var target = livingAllies[Random.Range(0, livingAllies.Count)];
 
+        bool crit = false;
         int damage;
         if (enemy.IsAHit(target))
         {
             if (enemy.CheckForCrit())
             {
                 damage = enemy.CalculateAttackDamage(target) * 2;
+                crit = true;
             }
             else
             {
@@ -245,6 +249,11 @@ public class BattleController : MonoBehaviour
         Debug.Log($"{enemy.DisplayName} attacks {target.DisplayName} for {damage} damage!");
 
         target.TakeDamage(damage);
+        DamageTextManager.Instance.SpawnDamageText(
+            target.transform,
+            damage,
+            crit
+        );
         CheckBattleEnd();
         RemoveDeadFromTurnOrder();
         yield return new WaitForSeconds(1f);
@@ -266,7 +275,6 @@ public class BattleController : MonoBehaviour
             playerHasFinishedInput = true;
         });
     }
-    
     public void OnSpellsPressed()
     {
         if (currentActingAlly == null)
@@ -329,7 +337,36 @@ public class BattleController : MonoBehaviour
             Debug.Log("All enemies are defeated!");
             EndBattle();
         }
+    } 
+    private int CalculateTotalExperienceReward()
+    {
+        int totalXP = 0;
+
+        foreach (var enemy in battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>(true))
+        {
+            if (enemy != null && enemy.stats != null)
+            {
+                totalXP += enemy.stats.experienceReward;
+            }
+        }
+
+        return totalXP;
     }
+    private void AwardExperienceToParty(int xp)
+    {
+        foreach (var ally in allySpawnArea.GetComponentsInChildren<AllyBattleActions>())
+        {
+            if (ally != null && ally.stats != null)
+            {
+                ally.stats.experience += xp;
+
+                Debug.Log($"{ally.DisplayName} gained {xp} XP (Now {ally.stats.experience})");
+
+                ally.CheckLevelUp();
+            }
+        }
+    }
+    
     
     void SpawnBattleEnemies(int count)
     {
@@ -413,6 +450,12 @@ public class BattleController : MonoBehaviour
             Vector3 spawnPos = allySpawnArea.position + playerBattleTransform.TransformDirection(localOffset);
 
             GameObject ally = Instantiate(member.allyPrefab, spawnPos, Quaternion.identity, allySpawnArea);
+            
+            AllyBattleActions allyActions = ally.GetComponent<AllyBattleActions>();
+            if (allyActions != null)
+            {
+                allyActions.ReviveForBattle();
+            }
             
             spawnedAllies.Add(ally);
 

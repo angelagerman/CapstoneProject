@@ -56,6 +56,7 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         if (stats.currentHealth < 0)
         {
             stats.currentHealth = 0;
+            //stats.isAlive = false;
         }
     }
     
@@ -67,12 +68,15 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
             return;
         }
         
+        bool crit = false;
+        bool miss = false;
         int damage;
         if (MeleeHitCheck(target))
         {
             if (CheckForCrit())
             {
                 damage = CalculateMeleeAttackDamage(target) * 2;
+                crit = true;
             }
             else
             {
@@ -83,10 +87,17 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         {
             damage = 0;
             print("miss!");
+            miss = true;
         }
         
         Debug.Log($"{DisplayName} attacks {target.DisplayName} for {damage} damage!");
         target.TakeDamage(damage);
+        
+        DamageTextManager.Instance.SpawnDamageText(
+            target.transform,
+            damage,
+            crit
+        );
 
         // add animation triggers here later
     }
@@ -100,12 +111,14 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         
         stats.currentMagic -= spell.manaCost;
         
+        bool crit = false;
         int damage;
         if (MagicHitCheck(target, spell))
         {
             if (CheckForCrit())
             {
                 damage = CalculateMagicAttackDamage(target, spell) * 2;
+                crit = true;
             }
             else
             {
@@ -120,6 +133,12 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         
         Debug.Log($"{DisplayName} attacks {target.DisplayName} for {damage} damage!");
         target.TakeDamage(damage);
+        
+        DamageTextManager.Instance.SpawnDamageText(
+            target.transform,
+            damage,
+            crit
+        );
 
         // add animation triggers here later
     }
@@ -209,5 +228,37 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         int equipMagicBuff   = equipment?.magicBuff ?? 0;
 
         return spellMight + equipMagicBuff + stats.magic - target.stats.defense;
+    }
+
+    public void CheckLevelUp()
+    {
+        if (stats.experience >= stats.experienceToNextLevel)
+        {
+            LevelUp();
+        }
+    }
+    public void LevelUp()
+    {
+        int newExperience = stats.experience - stats.experienceToNextLevel;
+        stats.experience = newExperience;
+        stats.level++;
+        
+        TryIncreaseStat(ref stats.maxHealth, stats.hpGrowth);
+        TryIncreaseStat(ref stats.strength, stats.strengthGrowth);
+        TryIncreaseStat(ref stats.magic, stats.magicGrowth);
+        TryIncreaseStat(ref stats.defense, stats.defenseGrowth);
+        TryIncreaseStat(ref stats.speed, stats.speedGrowth);
+        TryIncreaseStat(ref stats.luck, stats.luckGrowth);
+        
+        Debug.Log($"{stats.characterName} leveled up to {stats.level}!");
+    }
+    private void TryIncreaseStat(ref int stat, int growthRate)
+    {
+        int roll = Random.Range(0, 100); // 0-99
+        if (roll < growthRate)
+        {
+            stat += 1;
+            Debug.Log($"Stat increased! New value: {stat}");
+        }
     }
 }

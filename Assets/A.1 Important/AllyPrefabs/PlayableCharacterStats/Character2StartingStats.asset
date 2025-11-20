@@ -17,12 +17,19 @@ MonoBehaviour:
   level: 1
   maxHealth: 28
   currentHealth: 28
+  currentMagic: 28
   strength: 12
   magic: 4
   defense: 7
   speed: 7
   luck: 5
   isAlive: 1
+  hpGrowth: 55
+  strengthGrowth: 60
+  magicGrowth: 20
+  defenseGrowth: 50
+  speedGrowth: 50
+  luckGrowth: 25
   experience: 0
-  experienceToNextLevel: 100
+  experienceToNextLevel: 75
   description: 

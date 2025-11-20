@@ -37,6 +37,7 @@ public class EnemyBattleActions : MonoBehaviour, ICombatant
         {
             currentHealth = 0;
             isAlive = false;
+            gameObject.SetActive(false);
         }
     }
     public bool CheckForCrit()

@@ -12,8 +12,11 @@ public class GameManager : MonoBehaviour
     public GameObject pauseMenuUI;
     public GameObject pausePanel;
     public GameObject settingsPanel;
+    public Button saveButton;
 
     public PlayerController playerController;
+    
+    public CharacterStats[] currentStats;
 
     void Update()
     {
@@ -26,6 +29,7 @@ public class GameManager : MonoBehaviour
     public void TogglePause()
     {
         isPaused = !isPaused;
+        saveButton.interactable = !playerController.isInCombat;
 
         if (isPaused)
         {
@@ -66,5 +70,15 @@ public class GameManager : MonoBehaviour
         #else
             Application.Quit();
         #endif
+    }
+    
+    public void SaveGame()
+    {
+        foreach (var stats in currentStats)
+        {
+            SaveSystem.SaveCharacter(stats);
+        }
+
+        Debug.Log("Game Saved!");
     }
 }
