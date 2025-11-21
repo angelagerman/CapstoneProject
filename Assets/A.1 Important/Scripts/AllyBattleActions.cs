@@ -142,6 +142,27 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
 
         // add animation triggers here later
     }
+
+    public void Heal(AllyBattleActions target, MagicSpell spell)
+    {
+        if (target == null || !target.IsAlive)
+        {
+            Debug.Log($"{DisplayName} tried to attack, but the target is invalid!");
+            return;
+        }
+        
+        int healStrength = spell.might + ( stats.magic /3 );
+        int newHealth = target.stats.currentHealth + healStrength;
+
+        if (newHealth < target.stats.maxHealth)
+        {
+            target.stats.currentHealth = newHealth;
+        }
+        else
+        {
+            target.stats.currentHealth = target.stats.maxHealth;
+        }
+    }
     
     
     public bool MeleeHitCheck(EnemyBattleActions target)

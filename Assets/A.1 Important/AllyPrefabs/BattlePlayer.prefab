@@ -2944,31 +2944,67 @@ MonoBehaviour:
   weapon: {fileID: 11400000, guid: f5d3fdccbd3cde441a81a878737299e4, type: 2}
   equipment: {fileID: 0}
   magicSpells:
-  - spellName: test spell 2
+  - spellName: Fire
     spellElement: fire
     supportStat: 
-    might: 7
+    might: 3
+    hitRate: 90
+    manaCost: 3
+    levelRequirement: 1
+    isAOE: 0
+    isSupport: 0
+  - spellName: Heal
+    spellElement: light
+    supportStat: hp
+    might: 8
+    hitRate: 100
+    manaCost: 5
+    levelRequirement: 2
+    isAOE: 0
+    isSupport: 1
+  - spellName: Thunder
+    spellElement: fire
+    supportStat: 
+    might: 4
     hitRate: 80
-    manaCost: 5
-    levelRequirement: 1
+    manaCost: 8
+    levelRequirement: 2
     isAOE: 0
     isSupport: 0
-  - spellName: test spell 3
+  - spellName: Engulfing Flames
     spellElement: fire
     supportStat: 
-    might: 9
-    hitRate: 100
-    manaCost: 5
-    levelRequirement: 1
+    might: 8
+    hitRate: 85
+    manaCost: 12
+    levelRequirement: 4
     isAOE: 0
     isSupport: 0
-  - spellName: test spell overleveled
-    spellElement: fire
-    supportStat: 
-    might: 9
+  - spellName: Emergency Aid
+    spellElement: light
+    supportStat: hp
+    might: 30
     hitRate: 100
-    manaCost: 5
+    manaCost: 15
     levelRequirement: 5
+    isAOE: 0
+    isSupport: 1
+  - spellName: Raging Strike
+    spellElement: fire
+    supportStat: 
+    might: 15
+    hitRate: 80
+    manaCost: 20
+    levelRequirement: 7
+    isAOE: 0
+    isSupport: 0
+  - spellName: Aura Sphere
+    spellElement: light
+    supportStat: 
+    might: 12
+    hitRate: 70
+    manaCost: 12
+    levelRequirement: 7
     isAOE: 0
     isSupport: 0
 --- !u!1 &3328012999511134204

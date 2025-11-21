@@ -22,8 +22,18 @@ public class MagicMenuUI : MonoBehaviour
         // Create buttons
         foreach (var spell in ally.magicSpells)
         {
+            if (spell.levelRequirement > ally.stats.level)
+                continue;
+            
             GameObject btnObj = Instantiate(magicButtonPrefab, contentParent);
-            btnObj.GetComponentInChildren<Text>().text = spell.spellName;
+            Text spellText = btnObj.GetComponentInChildren<Text>();
+            Button btn = btnObj.GetComponent<Button>();
+            
+            spellText.text = $"{spell.spellName}  ({spell.manaCost} MP)";
+
+            
+            bool canAfford = ally.stats.currentMagic >= spell.manaCost;
+            btn.interactable = canAfford;
 
             btnObj.GetComponent<Button>().onClick.AddListener(() =>
             {

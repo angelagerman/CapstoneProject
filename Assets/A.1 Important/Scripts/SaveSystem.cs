@@ -30,7 +30,7 @@ public class SaveSystem : MonoBehaviour
     
     public static void LoadCharacter(CharacterStats current, CharacterStats starting)
     {
-        string charID = current.characterName;
+        string charID = starting.characterName;
         
         current.characterName = starting.characterName;
         current.weaponProficiency = starting.weaponProficiency;
@@ -38,8 +38,8 @@ public class SaveSystem : MonoBehaviour
 
         current.level = PlayerPrefs.GetInt($"{charID}_Level", starting.level);
         current.maxHealth = PlayerPrefs.GetInt($"{charID}_MaxHealth", starting.maxHealth);
-        current.currentHealth = PlayerPrefs.GetInt($"{charID}_CurrentHealth", starting.maxHealth);
-        current.currentMagic = PlayerPrefs.GetInt($"{charID}_CurrentMagic", starting.maxHealth);
+        current.currentHealth = PlayerPrefs.GetInt($"{charID}_CurrentHealth", starting.currentHealth);
+        current.currentMagic = PlayerPrefs.GetInt($"{charID}_CurrentMagic", starting.currentMagic);
         current.strength = PlayerPrefs.GetInt($"{charID}_Strength", starting.strength);
         current.magic = PlayerPrefs.GetInt($"{charID}_Magic", starting.magic);
         current.defense = PlayerPrefs.GetInt($"{charID}_Defense", starting.defense);

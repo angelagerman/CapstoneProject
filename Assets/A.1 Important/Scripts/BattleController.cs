@@ -30,6 +30,7 @@ public class BattleController : MonoBehaviour
 
     public PlayerController PlayerController;
     public EnemyTargetSelector enemySelector;
+    public AllyTargetSelector allySelector;
     
     public GameObject allyActionMenu;
     public TurnOrderUI turnOrderUI;
@@ -284,21 +285,39 @@ public class BattleController : MonoBehaviour
 
         magicMenu.Open(currentActingAlly, spell =>
         {
-            // When the spell is clicked
-
-            // first choose a target
-            var enemies = battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>();
             magicMenu.Close();
-            enemySelector.OpenSelector(enemies, enemy =>
-            {
-                Debug.Log($"Player selected magic spell: {spell.spellName}");
 
-                currentActingAlly.MagicAttack(enemy, spell);
-                
-                CheckBattleEnd();
-                RemoveDeadFromTurnOrder();
-                playerHasFinishedInput = true;
-            });
+            // SUPPORT SPELL → select ally
+            if (spell.isSupport)
+            {
+                var allies = allySpawnArea.GetComponentsInChildren<AllyBattleActions>();
+
+                allySelector.OpenSelector(allies, currentActingAlly, ally =>
+                {
+                    Debug.Log($"Healing {ally.DisplayName} with {spell.spellName}");
+                    currentActingAlly.Heal(ally, spell);
+
+                    CheckBattleEnd();
+                    RemoveDeadFromTurnOrder();
+                    playerHasFinishedInput = true;
+                });
+            }
+            else
+            {
+                // OFFENSIVE SPELL → select enemy
+                var enemies = battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>();
+
+                enemySelector.OpenSelector(enemies, enemy =>
+                {
+                    Debug.Log($"Player selected offensive spell: {spell.spellName} on {enemy.DisplayName}");
+
+                    currentActingAlly.MagicAttack(enemy, spell);
+
+                    CheckBattleEnd();
+                    RemoveDeadFromTurnOrder();
+                    playerHasFinishedInput = true;
+                });
+            }
         });
     }
 
