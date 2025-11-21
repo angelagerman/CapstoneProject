@@ -56,7 +56,7 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         if (stats.currentHealth < 0)
         {
             stats.currentHealth = 0;
-            //stats.isAlive = false;
+            stats.isAlive = false;
         }
     }
     
@@ -251,28 +251,66 @@ public class AllyBattleActions : MonoBehaviour, ICombatant
         return spellMight + equipMagicBuff + stats.magic - target.stats.defense;
     }
 
-    public void CheckLevelUp()
+    public void CheckLevelUpWithUI(LevelUpManager levelUpManager, System.Action onComplete)
     {
+        // Only process ONE level-up per call
         if (stats.experience >= stats.experienceToNextLevel)
         {
-            LevelUp();
+            LevelUpWithUI(levelUpManager, onComplete);
+        }
+        else
+        {
+            onComplete?.Invoke(); // No level-up, continue
         }
     }
-    public void LevelUp()
+
+    private void LevelUpWithUI(LevelUpManager levelUpManager, System.Action onComplete)
     {
-        int newExperience = stats.experience - stats.experienceToNextLevel;
-        stats.experience = newExperience;
+        // Track old stats
+        Dictionary<string, int> statIncreases = new();
+        int oldMaxHealth = stats.maxHealth;
+        int oldStrength = stats.strength;
+        int oldMagic = stats.magic;
+        int oldDefense = stats.defense;
+        int oldSpeed = stats.speed;
+        int oldLuck = stats.luck;
+
+        // Subtract ONLY the XP required for this level
+        stats.experience -= stats.experienceToNextLevel;
         stats.level++;
-        
+
         TryIncreaseStat(ref stats.maxHealth, stats.hpGrowth);
         TryIncreaseStat(ref stats.strength, stats.strengthGrowth);
         TryIncreaseStat(ref stats.magic, stats.magicGrowth);
         TryIncreaseStat(ref stats.defense, stats.defenseGrowth);
         TryIncreaseStat(ref stats.speed, stats.speedGrowth);
         TryIncreaseStat(ref stats.luck, stats.luckGrowth);
-        
+
+        // Record increases
+        statIncreases["HP"] = stats.maxHealth - oldMaxHealth;
+        statIncreases["Strength"] = stats.strength - oldStrength;
+        statIncreases["Magic"] = stats.magic - oldMagic;
+        statIncreases["Defense"] = stats.defense - oldDefense;
+        statIncreases["Speed"] = stats.speed - oldSpeed;
+        statIncreases["Luck"] = stats.luck - oldLuck;
+
+        // Check for newly unlocked spells at this level
+        List<MagicSpell> newSpells = new();
+        foreach (var spell in magicSpells)
+        {
+            if (spell.levelRequirement <= stats.level && !stats.knownSpells.Contains(spell.spellName))
+            {
+                newSpells.Add(spell);
+                stats.knownSpells.Add(spell.spellName); // mark as learned
+            }
+        }
+
+        // Show UI and wait for player input before doing any more
+        levelUpManager.ShowLevelUp(this, statIncreases, newSpells, onComplete);
+
         Debug.Log($"{stats.characterName} leveled up to {stats.level}!");
     }
+
     private void TryIncreaseStat(ref int stat, int growthRate)
     {
         int roll = Random.Range(0, 100); // 0-99

@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private bool isGrounded;
     private bool isSprinting;
-    private bool isAutoRunEnabled = false;
+    public bool isAutoRunEnabled = false;
     
     private Vector3 moveDirection;
     private Vector3 currentMoveDirection;
@@ -77,9 +77,6 @@ public class PlayerController : MonoBehaviour
             {
                 Jump();
             }
-            
-            if (Input.GetKeyDown(KeyCode.R))
-                isAutoRunEnabled = !isAutoRunEnabled;
             
             isSprinting = isAutoRunEnabled || Input.GetKey(KeyCode.LeftShift);
         }

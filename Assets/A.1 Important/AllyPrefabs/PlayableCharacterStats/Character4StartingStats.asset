@@ -10,28 +10,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1ee9a72a3d3e3943af4954d277c7a2d, type: 3}
-  m_Name: PlayerStartingStats
+  m_Name: Character4StartingStats
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
-  characterName: Player
-  weaponProficiency: Sword
+  characterName: Ally4
+  weaponProficiency: Gauntlets
   level: 1
-  maxHealth: 27
-  currentHealth: 27
-  currentMagic: 27
-  strength: 13
+  maxHealth: 29
+  currentHealth: 29
+  currentMagic: 29
+  strength: 12
   magic: 6
-  defense: 6
+  defense: 8
   speed: 8
-  luck: 8
+  luck: 3
   isAlive: 1
   knownSpells:
   - Fire
-  hpGrowth: 45
-  strengthGrowth: 45
-  magicGrowth: 35
-  defenseGrowth: 35
-  speedGrowth: 45
-  luckGrowth: 45
+  - Heal
+  hpGrowth: 50
+  strengthGrowth: 50
+  magicGrowth: 30
+  defenseGrowth: 45
+  speedGrowth: 30
+  luckGrowth: 20
   experience: 0
   experienceToNextLevel: 75
-  description: '"It''s You!"'
+  description: 

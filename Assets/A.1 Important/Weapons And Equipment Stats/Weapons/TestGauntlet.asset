@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff8906bb7f4eeae4fb3fefb847c30552, type: 3}
   m_Name: TestGauntlet
   m_EditorClassIdentifier: Assembly-CSharp::WeaponStats
-  weaponName: 
-  weaponType: 
+  weaponName: Training Gauntlets
+  weaponType: Gauntlet
   levelRequirement: 0
-  weight: 0
-  hitRate: 0
+  weight: 1
+  hitRate: 90
   might: 0
   description: 

@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Training Sword
   weaponType: Sword
   levelRequirement: 0
-  weight: 3
+  weight: 4
   hitRate: 100
-  might: 4
+  might: 3
   description: 

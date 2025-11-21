@@ -10,28 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1ee9a72a3d3e3943af4954d277c7a2d, type: 3}
-  m_Name: PlayerStartingStats
+  m_Name: Character3StartingStats
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStats
-  characterName: Player
-  weaponProficiency: Sword
+  characterName: Ally3
+  weaponProficiency: Bow
   level: 1
-  maxHealth: 27
-  currentHealth: 27
-  currentMagic: 27
-  strength: 13
-  magic: 6
+  maxHealth: 26
+  currentHealth: 26
+  currentMagic: 26
+  strength: 11
+  magic: 5
   defense: 6
   speed: 8
-  luck: 8
+  luck: 7
   isAlive: 1
-  knownSpells:
-  - Fire
-  hpGrowth: 45
-  strengthGrowth: 45
-  magicGrowth: 35
-  defenseGrowth: 35
-  speedGrowth: 45
+  hpGrowth: 35
+  strengthGrowth: 40
+  magicGrowth: 25
+  defenseGrowth: 30
+  speedGrowth: 55
   luckGrowth: 45
   experience: 0
   experienceToNextLevel: 75
-  description: '"It''s You!"'
+  description: 

@@ -4,48 +4,43 @@ using UnityEngine.UI;
 
 public class TurnOrderUI : MonoBehaviour
 {
-    public Transform turnOrderContainer;  // parent object that holds all entries
-    public GameObject turnOrderEntryPrefab; // your text prefab
+    public Transform turnOrderContainer;
+    public GameObject turnOrderEntryPrefab;
 
-    private readonly List<GameObject> activeEntries = new List<GameObject>();
+    private readonly Dictionary<ICombatant, GameObject> activeEntries = new Dictionary<ICombatant, GameObject>();
 
     public void UpdateTurnOrderDisplay(List<ICombatant> turnOrder)
     {
-        // Clear old entries
-        foreach (var entry in activeEntries)
-            Destroy(entry);
-        activeEntries.Clear();
-
-        // Create new entries
-        foreach (var combatant in turnOrder)
+        // Remove entries that are no longer in turnOrder
+        foreach (var kvp in new Dictionary<ICombatant, GameObject>(activeEntries))
         {
-            GameObject entry = Instantiate(turnOrderEntryPrefab, turnOrderContainer);
-            var text = entry.GetComponentInChildren<Text>();
-            if (text != null)
-                text.text = $"{combatant.DisplayName}";
-            activeEntries.Add(entry);
-        }
-    }
-    
-    public void RemoveCombatantFromOrder(ICombatant combatant)
-    {
-        // Find the UI entry matching the combatant’s name
-        GameObject entryToRemove = null;
-
-        foreach (var entry in activeEntries)
-        {
-            var text = entry.GetComponentInChildren<Text>();
-            if (text != null && text.text == combatant.DisplayName)
+            if (!turnOrder.Contains(kvp.Key))
             {
-                entryToRemove = entry;
-                break;
+                Destroy(kvp.Value);
+                activeEntries.Remove(kvp.Key);
             }
         }
 
-        if (entryToRemove != null)
+        // Add new entries
+        foreach (var combatant in turnOrder)
         {
-            activeEntries.Remove(entryToRemove);
-            Destroy(entryToRemove);
+            if (!activeEntries.ContainsKey(combatant))
+            {
+                GameObject entry = Instantiate(turnOrderEntryPrefab, turnOrderContainer);
+                var text = entry.GetComponentInChildren<Text>();
+                if (text != null)
+                    text.text = combatant.DisplayName;
+                activeEntries.Add(combatant, entry);
+            }
+        }
+    }
+
+    public void RemoveCombatantFromOrder(ICombatant combatant)
+    {
+        if (activeEntries.TryGetValue(combatant, out GameObject entry))
+        {
+            activeEntries.Remove(combatant);
+            Destroy(entry);
         }
     }
 }

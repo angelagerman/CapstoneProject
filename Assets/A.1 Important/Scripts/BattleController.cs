@@ -37,10 +37,16 @@ public class BattleController : MonoBehaviour
     public AllyStatusUI allyStatusUI;
     public GameObject BattleUI;
     public MagicMenuUI magicMenu;
+    public GameObject gameOverCanvas;
     private List<GameObject> spawnedAllies = new();
 
     private bool playerHasFinishedInput = false;
     private AllyBattleActions currentActingAlly;
+
+    private string currentMenu;
+    public GameObject backButton;
+    
+    public LevelUpManager levelUpManager;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -56,6 +62,24 @@ public class BattleController : MonoBehaviour
         {
             EndBattle();
         }
+    }
+    
+    public void SetParty(GameObject[] selectedParty)
+    {
+        partyMembers.Clear();
+
+        foreach (var prefab in selectedParty)
+        {
+            if (prefab == null) continue;
+
+            PartyMember member = new PartyMember
+            {
+                allyPrefab = prefab
+            };
+            partyMembers.Add(member);
+        }
+
+        Debug.Log($"Party assigned: {string.Join(", ", partyMembers.ConvertAll(p => p.allyPrefab.name))}");
     }
 
     public void StartBattle(int zoneNumber, int enemyCount)
@@ -76,12 +100,9 @@ public class BattleController : MonoBehaviour
         StartRound();
     }
     
+    
     void EndBattle()
     {
-        int totalXP = CalculateTotalExperienceReward();
-        AwardExperienceToParty(totalXP);
-        Debug.Log($"Party gained {totalXP} total XP!");
-
         battleActive = false;
         PlayerController.isInCombat = false;
         CameraSwitch.SwapActiveCamera(battleCamera, overworldCamera);
@@ -262,8 +283,10 @@ public class BattleController : MonoBehaviour
     
     public void OnAttackPressed()
     {
+        backButton.SetActive(true);
         var enemies = battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>();
         allyActionMenu?.SetActive(false);
+        currentMenu = "AttackSelect";
 
         enemySelector.OpenSelector(enemies, enemy =>
         {
@@ -272,12 +295,15 @@ public class BattleController : MonoBehaviour
             currentActingAlly.MeleeAttack(enemy);
             
             CheckBattleEnd();
+            backButton.SetActive(false);
             RemoveDeadFromTurnOrder();
             playerHasFinishedInput = true;
         });
     }
     public void OnSpellsPressed()
     {
+        backButton.SetActive(true);
+        currentMenu = "MagicMenu";
         if (currentActingAlly == null)
             return;
 
@@ -285,6 +311,7 @@ public class BattleController : MonoBehaviour
 
         magicMenu.Open(currentActingAlly, spell =>
         {
+            currentMenu = spell.isSupport ? "SupportSelect" : "OffenseSelect";
             magicMenu.Close();
 
             // SUPPORT SPELL → select ally
@@ -298,6 +325,7 @@ public class BattleController : MonoBehaviour
                     currentActingAlly.Heal(ally, spell);
 
                     CheckBattleEnd();
+                    backButton.SetActive(false);
                     RemoveDeadFromTurnOrder();
                     playerHasFinishedInput = true;
                 });
@@ -314,6 +342,7 @@ public class BattleController : MonoBehaviour
                     currentActingAlly.MagicAttack(enemy, spell);
 
                     CheckBattleEnd();
+                    backButton.SetActive(false);
                     RemoveDeadFromTurnOrder();
                     playerHasFinishedInput = true;
                 });
@@ -324,7 +353,7 @@ public class BattleController : MonoBehaviour
     
     private void CheckBattleEnd()
     {
-        // Check if any living allies
+        // Check living allies
         bool anyAlliesAlive = false;
         foreach (var ally in allySpawnArea.GetComponentsInChildren<AllyBattleActions>())
         {
@@ -335,7 +364,7 @@ public class BattleController : MonoBehaviour
             }
         }
 
-        // Check if any living enemies
+        // Check living enemies
         bool anyEnemiesAlive = false;
         foreach (var enemy in battleSpawnArea.GetComponentsInChildren<EnemyBattleActions>())
         {
@@ -349,14 +378,17 @@ public class BattleController : MonoBehaviour
         if (!anyAlliesAlive)
         {
             Debug.Log("All allies are defeated!");
-            EndBattle();
+            TriggerGameOver();
         }
         else if (!anyEnemiesAlive)
         {
             Debug.Log("All enemies are defeated!");
-            EndBattle();
+            int totalXP = CalculateTotalExperienceReward();
+
+            // Award XP and process level-ups before ending battle
+            AwardExperienceToParty(totalXP, endBattleAfterLevelUps: true);
         }
-    } 
+    }
     private int CalculateTotalExperienceReward()
     {
         int totalXP = 0;
@@ -371,21 +403,75 @@ public class BattleController : MonoBehaviour
 
         return totalXP;
     }
-    private void AwardExperienceToParty(int xp)
+
+    private void AwardExperienceToParty(int xp, bool endBattleAfterLevelUps = false)
     {
+        List<AllyBattleActions> alliesThatLevelUp = new();
+
         foreach (var ally in allySpawnArea.GetComponentsInChildren<AllyBattleActions>())
         {
             if (ally != null && ally.stats != null)
             {
                 ally.stats.experience += xp;
-
                 Debug.Log($"{ally.DisplayName} gained {xp} XP (Now {ally.stats.experience})");
 
-                ally.CheckLevelUp();
+                if (ally.stats.experience >= ally.stats.experienceToNextLevel)
+                    alliesThatLevelUp.Add(ally);
             }
         }
+
+        if (alliesThatLevelUp.Count > 0)
+        {
+            // Start level-up sequence, end battle AFTER UI closes
+            StartCoroutine(ProcessLevelUpsSequentially(alliesThatLevelUp, endBattleAfterLevelUps));
+        }
+        else if (endBattleAfterLevelUps)
+        {
+            EndBattle(); // safe to end battle
+        }
     }
-    
+
+
+
+    private IEnumerator ProcessLevelUpsSequentially(List<AllyBattleActions> allies, bool endBattleAfterLevelUps)
+    {
+        foreach (var ally in allies)
+        {
+            bool finished = false;
+
+            // Each ally only levels up ONE time per UI call
+            ally.CheckLevelUpWithUI(levelUpManager, () => finished = true);
+
+            // Wait for the player to finish the level-up screen
+            yield return new WaitUntil(() => finished);
+        }
+
+        Debug.Log("All level-ups completed.");
+
+        if (endBattleAfterLevelUps)
+            EndBattle(); // Now safe to end battle
+    }
+
+    private void TriggerGameOver()
+    {
+        battleActive = false; 
+        PlayerController.isInCombat = false;
+
+        BattleUI.SetActive(false);
+        gameOverCanvas.SetActive(true); 
+
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.visible = true;
+
+        //destroy remaining battle objects just in case
+        foreach (Transform child in battleSpawnArea)
+            Destroy(child.gameObject);
+        foreach (Transform child in allySpawnArea)
+            Destroy(child.gameObject);
+
+        spawnedAllies.Clear();
+    }
+
     
     void SpawnBattleEnemies(int count)
     {
@@ -438,54 +524,82 @@ public class BattleController : MonoBehaviour
             Destroy(child.gameObject);
         spawnedAllies.Clear();
 
-        int count = Mathf.Min(partyMembers.Count, 4);
-        if (count == 0)
+        int totalSlots = Mathf.Min(partyMembers.Count, 4);
+        if (totalSlots == 0)
         {
             Debug.Log("No allies to spawn.");
             return;
         }
 
-        float baseRadius = 3.5f;     
-        float minArc = 60f;          
-        float maxArc = 140f;         
+        float baseRadius = 3.5f;
+        float minArc = 60f;
+        float maxArc = 140f;
 
-        float totalArcAngle = Mathf.Lerp(minArc, maxArc, (count - 1) / 2f);
+        float totalArcAngle = Mathf.Lerp(minArc, maxArc, (totalSlots - 1) / 2f);
         float startAngle = -totalArcAngle / 2f;
-        float angleStep = count > 1 ? totalArcAngle / (count - 1) : 0f;
+        float angleStep = totalSlots > 1 ? totalArcAngle / (totalSlots - 1) : 0f;
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < totalSlots; i++)
         {
-            var member = partyMembers[i];
-            if (member == null || member.allyPrefab == null)
-                continue;
-
             float angle = startAngle + angleStep * i;
             float rad = angle * Mathf.Deg2Rad;
 
-            // Original local offset in X/Z plane
             Vector3 localOffset = new Vector3(Mathf.Sin(rad), 0, -Mathf.Cos(rad)) * baseRadius;
-
-            // Rotate offset relative to player's facing
             Vector3 spawnPos = allySpawnArea.position + playerBattleTransform.TransformDirection(localOffset);
 
+            var member = partyMembers[i];
+            if (member == null || member.allyPrefab == null)
+                continue; // Skip spawning, but still reserve position
+
             GameObject ally = Instantiate(member.allyPrefab, spawnPos, Quaternion.identity, allySpawnArea);
-            
+
             AllyBattleActions allyActions = ally.GetComponent<AllyBattleActions>();
             if (allyActions != null)
-            {
                 allyActions.ReviveForBattle();
-            }
-            
+
             spawnedAllies.Add(ally);
 
-            // Make them look toward the enemy / battle center
+            // Face toward battle center
             if (playerBattleTransform != null)
             {
-                Vector3 focusPoint = playerBattleTransform.position + playerBattleTransform.forward * 5f; // adjust 5f to taste
+                Vector3 focusPoint = playerBattleTransform.position + playerBattleTransform.forward * 5f;
                 ally.transform.LookAt(new Vector3(focusPoint.x, ally.transform.position.y, focusPoint.z));
             }
         }
+
         if (allyStatusUI != null)
             allyStatusUI.BuildStatusPanel(spawnedAllies);
+    }
+    
+    public void BattleBackButton()
+    {
+        switch (currentMenu)
+        {
+            case "AttackSelect":
+                enemySelector.Close();
+                allyActionMenu.SetActive(true);
+                currentMenu = null;
+                backButton.SetActive(false);
+                break;
+
+            case "OffenseSelect":
+                enemySelector.Close();
+                magicMenu.Reopen();
+                currentMenu = "MagicMenu";
+                break;
+
+            case "SupportSelect":
+                allySelector.Close();
+                magicMenu.Reopen();
+                currentMenu = "MagicMenu";
+                break;
+
+            case "MagicMenu":
+                magicMenu.Close();
+                allyActionMenu.SetActive(true);
+                currentMenu = null;
+                backButton.SetActive(false);
+                break;
+        }
     }
 }

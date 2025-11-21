@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewCharacterStats", menuName = "RPG/Character Stats/Base")]
@@ -19,6 +20,7 @@ public class CharacterStats : ScriptableObject
     public int speed;
     public int luck;
     public bool isAlive;
+    public List<string> knownSpells = new List<string>();
 
     [Header("Stat Growths")] 
     public int hpGrowth;

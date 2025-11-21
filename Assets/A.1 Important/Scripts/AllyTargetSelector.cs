@@ -43,9 +43,13 @@ public class AllyTargetSelector : MonoBehaviour
 
     private void Select(AllyBattleActions ally)
     {
-        panel.SetActive(false);
-
+        Close();
         onTargetSelected?.Invoke(ally);
         onTargetSelected = null;
+    }
+
+    public void Close()
+    {
+        panel.SetActive(false);
     }
 }

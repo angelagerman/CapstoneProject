@@ -24,6 +24,9 @@ MonoBehaviour:
   speed: 8
   luck: 5
   isAlive: 1
+  knownSpells:
+  - Fire
+  - Heal
   hpGrowth: 40
   strengthGrowth: 55
   magicGrowth: 45

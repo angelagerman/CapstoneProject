@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f2ce5986ba930b4a9b2352575b84285, type: 3}
+  m_Name: AllCharacters
+  m_EditorClassIdentifier: Assembly-CSharp::AllCharacters
+  characterPrefabs:
+  - {fileID: 4452525422706350914, guid: 5df83ed62f2cad14a869586e4c97b438, type: 3}
+  - {fileID: 971939394810068626, guid: 356ec8f72c941fa4c839b0ffb2beb4a0, type: 3}
+  - {fileID: 1129307995745008488, guid: 8470432afd512074c8b45ad2422a4088, type: 3}
+  - {fileID: 3302256118976027301, guid: ad71f4a9f24c71c49b0937d0dcf95c3e, type: 3}
+  - {fileID: 1129307995745008488, guid: 01e883489a184124cae9fec02947cfe8, type: 3}

@@ -37,9 +37,13 @@ public class EnemyTargetSelector : MonoBehaviour
 
     private void Select(EnemyBattleActions enemy)
     {
-        panel.SetActive(false);
-
+        Close();
         onTargetSelected?.Invoke(enemy);
         onTargetSelected = null;
+    }
+
+    public void Close()
+    {
+        panel.SetActive(false);
     }
 }

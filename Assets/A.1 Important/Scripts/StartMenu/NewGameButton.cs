@@ -9,6 +9,8 @@ public class NewGameButton : MonoBehaviour
     public void StartNewGame()
     {
         SaveSystem.ClearSave();
+        PlayerPrefs.DeleteKey(GameManager.AUTO_RUN_KEY);
+        PlayerPrefs.DeleteKey(GameManager.MOUSE_SENS_KEY);
 
         Debug.Log("=== NEW GAME STARTED ===");
 
